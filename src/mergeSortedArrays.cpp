@@ -15,132 +15,80 @@ NOTES:
 */
 
 #include <iostream>
-int pow1(int, int);
-int month(char *);
-int year(char *);
-int day(char *);
+
 struct transaction {
 	int amount;
 	char date[11];
 	char description[20];
 };
 
-struct transaction * mergeSortedArrays(struct transaction *A, int ALen, struct transaction *B, int BLen) {
-	if (A == NULL)
-		return NULL;
-	if (B == NULL)
-		return NULL;
-	if (ALen <= 0 && BLen > 0)
-		return B;
-	if (BLen <= 0 && ALen > 0)
-		return A;
-	if (ALen <= 0 && BLen <= 0)
-		return NULL;
-	struct transaction *res;
-	res = (struct transaction*)malloc((ALen + BLen)*sizeof(struct transaction)); 
-	int i = 0, j = 0, k = 0;
-	while (i < ALen && j < BLen)
+int cmpDate(char *date1, char* date2){
+	int year1 = ((date1[6]) * 1000 + (date1[7]) * 100 + (date1[8]) * 10 + (date1[9]));
+	int year2 = ((date2[6]) * 1000 + (date2[7]) * 100 + (date2[8]) * 10 + (date2[9]));
+	int year = year1 - year2;
+	if (year == 0)
 	{
-		int year1 = year(A[i].date);
-		int month1 = month(A[i].date);
-		int day1 = day(A[i].date);
-		//while(j<BLen)
-		//{
-		int year2 = year(B[j].date);
-		int month2 = month(B[j].date);
-		int day2 = day(B[j].date);
-
-		if (year2 < year1)
+		int month1 = ((date1[3]) * 10 + (date1[4]));
+		int month2 = ((date2[3]) * 10 + (date2[4]));
+		int month = month1 - month2;
+		if (month == 0)
 		{
-			res[k++] = B[j++];
-			//break;
-		}
-		else if (year2 > year1)
-		{
-			res[k++] = A[i++];
-			//break;
+			int day1 = ((date1[0]) * 10 + (date1[1]));
+			int day2 = ((date2[0]) * 10 + (date2[1]));
+			int day = day1 - day2;
+			return day;
 		}
 		else
 		{
-			if (month2 < month1)
-			{
-				res[k++] = B[j++];
-				//break;
-			}
-			else if (month2 > month1)
-			{
-				res[k++] = A[i++];
-				//break;
-			}
-			else
-			{
-				if (day2 > day1)
-				{
-					res[k++] = A[i++];
-					//break;
-				}
-				else if (day2 < day1)
-				{
-					res[k++] = B[j++];
-					//break;
-				}
-				else
-				{
-					res[k++] = A[i++];
-					j++;
-					//break;
-				}
-			}
-			//}
+			return month;
 		}
 	}
-		while (i<ALen)
-			res[k++] = A[i++];
+	else
+	{
+		return year;
+	}
 
+}
 
-	
-	while(j < BLen)
+struct transaction * mergeSortedArrays(struct transaction *A, int ALen, struct transaction *B, int BLen) {
+	if (A == NULL || B == NULL)
+		return NULL;
+	struct transaction * mergedSortedArray = (struct transaction *)malloc(sizeof(struct transaction)*(ALen + BLen));
+	int transA = 0, transB = 0, transRes = 0;
+	while (transA<ALen&&transB<BLen)
 	{
-		res[k++] = B[j++];
+		int res = cmpDate(A[transA].date, B[transB].date);
+		if (res<0){
+			mergedSortedArray[transRes] = A[transA];
+			transA++;
+			transRes++;
+		}
+		else if (res>0){
+			mergedSortedArray[transRes] = B[transB];
+			transB++;
+			transRes++;
+		}
+		else
+		{
+			mergedSortedArray[transRes] = A[transA];
+			transA++;
+			transRes++;
+			mergedSortedArray[transRes] = B[transB];
+			transB++;
+			transRes++;
+		}
 	}
-	return res;
-
-
-	
-}
-int year(char *ptr)
-{
-	int j = 4,res=0;
-	for (int i = 6; i < 10; i++)
+	while (transA < ALen)
 	{
-		res = res + (ptr[i]-48) * pow1(1, j--);
+		mergedSortedArray[transRes] = A[transA];
+		transA++;
+		transRes++;
 	}
-	return res;
-}
-int month(char *ptr)
-{
-	int j = 2, res = 0;
-	for (int i = 3; i < 5; i++)
+	while (transB<BLen)
 	{
-		res = res + (ptr[i] - 48) * pow1(1, j--);
+		mergedSortedArray[transRes] = B[transB];
+		transB++;
+		transRes++;
 	}
-	return res;
-}
-int day(char *ptr)
-{
-	int j = 2, res = 0;
-	for (int i = 0; i < 2; i++)
-	{
-		res = res + (ptr[i] - 48) * pow1(1, j--);
-	}
-	return res;
-}
-int pow1(int a, int b)
-{
-	
-	for (int i = 0; i < b-1; i++)
-	{
-		a=a* 10;
-	}
-	return a;
+	return mergedSortedArray;
 }
